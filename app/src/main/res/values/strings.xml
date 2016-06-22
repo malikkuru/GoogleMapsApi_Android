@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">GoogleMaps Project</string>
+    <string name="none">None</string>
+    <string name="current_location">Current Location</string>
+</resources>
