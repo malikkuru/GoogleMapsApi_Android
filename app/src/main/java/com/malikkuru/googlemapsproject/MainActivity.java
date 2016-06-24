@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private Marker mMarker;
 
-    //private LocationListener mListener;
+    private LocationListener mListener;
 
     public boolean onCreateOptionsMenu(Menu menu) {   // this method shows menu icon on toolbar
         MenuInflater inflater = getMenuInflater();      // use with menu/menu.xml
@@ -141,24 +141,39 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Geocoder gc = new Geocoder(this);
 
         List<Address> list = gc.getFromLocationName(location, 1); //1 is maximum result number
-        Address add = list.get(0);
 
-        String locality = add.getLocality(); //girilen adresin bulunduğu konum
+        if (list.size() > 0) {
+            Address add = list.get(0);
 
-        Toast.makeText(this, locality, Toast.LENGTH_LONG).show();
+            String locality = add.getLocality(); //girilen adresin bulunduğu konum
 
-        double lat = add.getLatitude();
-        double lng = add.getLongitude();
+            Toast.makeText(this, locality, Toast.LENGTH_LONG).show();
 
-        goToLocation(lat, lng, 15);
+            double lat = add.getLatitude();
+            double lng = add.getLongitude();
 
-        if(mMarker != null) { // for deleting previous marker
-            mMarker.remove();
+            goToLocation(lat, lng, 15);
+
+            /** MARKER **/
+            if(mMarker != null) { // for deleting previous marker
+                mMarker.remove();
+            }
+
+            addMarker(add, lat, lng);
         }
-        MarkerOptions mOptions = new MarkerOptions().title(locality).position(new LatLng(lat, lng));    // Adding marker
-        mMarker = mMap.addMarker(mOptions);                                                             // Adding marker
     }
 
+    private void addMarker(Address add, double lat, double lng) {
+        MarkerOptions mOptions = new MarkerOptions().title(add.getLocality()).position(new LatLng(lat, lng));    // Adding marker
+
+        /** Snippet **/
+        String country = add.getCountryName();
+        if (country.length() > 0) {
+            mOptions.snippet(country);
+        }
+
+        mMarker = mMap.addMarker(mOptions);
+    }
     public void hideSoftKeyboard(View v) {
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
@@ -210,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onPause() {
         super.onPause();
-       // LocationServices.FusedLocationApi.removeLocationUpdates(mClient, mListener); //location listener deactivate
+        LocationServices.FusedLocationApi.removeLocationUpdates(mClient, mListener); //location listener deactivate
     }
 
     @Override
@@ -285,17 +300,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnected(@Nullable Bundle bundle) { //implements googleapiclient
         Toast.makeText(this, "Connected to location Services ", Toast.LENGTH_SHORT).show();
 
-        /**
-        *
-        *
-        * Location Listener
-        *
+
         mListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                Toast.makeText(MainActivity.this, "Location Changed : " + location.getLatitude() + " , " + location.getLongitude(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Location : " + location.getLatitude() + " , " + location.getLongitude(), Toast.LENGTH_SHORT).show();
 
-                goToLocation(location.getLatitude(), location.getLongitude(), 15);
+                //goToLocation(location.getLatitude(), location.getLongitude(), 15);
             }
 
         };
@@ -309,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             LocationServices.FusedLocationApi.requestLocationUpdates(mClient, request, mListener); // activate listener
         } catch (SecurityException s) {
             Toast.makeText(MainActivity.this, "Security Exception!", Toast.LENGTH_SHORT).show();
-        }*/
+        }
 
     }
 
